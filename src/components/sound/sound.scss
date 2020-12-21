@@ -1,0 +1,82 @@
+.sound {
+    margin-left: 30px;
+    display: inline-block;
+    vertical-align: middle;
+    position: relative;
+
+    &__wrapper {
+        position: fixed;
+        height: 100vh;
+        width: 100vw;
+        top: 0;
+        left: 0;
+    }
+
+    &__progress {
+        position: absolute;
+        top: -90px;
+        height: 90px;
+        width: 20px;
+        margin-left: 10.5px;
+        padding-bottom: 5px;
+        padding-top: 18px;
+        background-color: #575655;
+        align-items: flex-end;
+        justify-content: center;
+        border-radius: 4px;
+        cursor: pointer;
+        visibility: hidden;
+        display: flex;
+        transition: visibility 1s ease-in-out;
+        z-index: 5;
+
+        &-active, &:hover {
+            visibility: visible;
+            transition-delay: 5s;
+        }
+
+        &__bar {
+            background-color: red;
+            width: 40%;
+            display: inline-block;
+            position: relative;
+
+            &__door-handle {
+                position: absolute;
+                width: 13px;
+                height: 13px;
+                border-radius: 50%;
+                left: calc(50% - 6.5px);
+                top: -11px;
+                background-color: red;
+                box-shadow: inset 0px 0px 1px 0px #E3E3E3; /* Opera 10.5, IE 9, Firefox 4+, Chrome 6+, iOS 5 */
+            }
+        }
+    }
+
+    &__icon-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 50px;
+        height: 50px;
+        z-index: 2;
+        position: relative;
+
+        &__icon {
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+
+            &:hover {
+                transform: scale(1.2);
+            }
+        }
+
+        &:hover {
+            ~.sound__progress {
+                visibility: visible;
+            }
+        }
+    }
+}
