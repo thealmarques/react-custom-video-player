@@ -1,12 +1,13 @@
+import axios from "axios";
 import React, { useState } from "react";
 import { Icon } from "../../shared/icon";
 import './subtitles.scss';
 
-export const Subtitles = () => {
+export const Subtitles = ( {setSubtitle} ) => {
    const [audio] = useState(['English [Original]', 'French [FR]']);
    const [subtitle] = useState(['Portuguese', 'English', 'Deactivated']);
    const [selectedAudio, setSelectedAudio] = useState(0);
-   const [selectedSubtitle, setSelectedSubtitle] = useState(0);
+   const [selectedSubtitle, setSelectedSubtitle] = useState(2);
 
   return (
     <div className="subtitles">
@@ -46,7 +47,16 @@ export const Subtitles = () => {
               {
                   subtitle.map((value, index) => {
                     return (
-                        <div onClick={() => setSelectedSubtitle(index)} key={`audio_${index}`} className="subtitles__container__category__option">
+                        <div onClick={() => {
+                            setSelectedSubtitle(index);
+                            if (index === 2) {
+                                setSubtitle('');
+                            } else {
+                                axios.get('http://localhost:9000/subtitles/en.vtt').then((result) => {
+                                    setSubtitle(result.data);
+                                });
+                            }
+                        }} key={`audio_${index}`} className="subtitles__container__category__option">
                             { selectedSubtitle === index && 
                                 <Icon
                                     onClick={null}

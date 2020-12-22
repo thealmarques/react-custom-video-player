@@ -1,4 +1,4 @@
-import React, { Fragment, useRef, useState } from "react";
+import React, { Fragment, useEffect, useRef, useState } from "react";
 import { Icon } from "../../shared/icon";
 import { Sound } from "../sound/sound";
 import { Subtitles } from "../subtitles/subtitles";
@@ -13,6 +13,7 @@ export const Player = ({ video }) => {
   const [sound, setSound] = useState(0);
   const videoRef = useRef(null);
   const progressBar = useRef(null);
+  const subtitleRef = useRef(null);
 
   const setControlsVisible = () => {
     /** @type HTMLElement */ const element = controls.current;
@@ -23,7 +24,7 @@ export const Player = ({ video }) => {
     timeout.current = setTimeout(() => {
       element.classList.remove("player__container__controls-active");
       setVisible(false);
-    }, 30000);
+    }, 3000);
   };
 
   const setSoundLevel = (level) => {
@@ -42,16 +43,24 @@ export const Player = ({ video }) => {
   };
 
   const setFullscreen = () => {
-    /** @type HTMLVideoElement */ const element = document.querySelector(
+    /** @type any */ const element = document.querySelector(
       ".player__container"
     );
-    element.requestFullscreen();
+
+    if (element.requestFullscreen) {
+      element.requestFullscreen();
+    } else if (element.webkitRequestFullscreen) { /* Safari */
+      element.webkitRequestFullscreen();
+    } else if (element.msRequestFullscreen) { /* IE11 */
+      element.msRequestFullscreen();
+    }
   };
 
-  const setVideoProgress = (event) => {
+  const setVideoProgress = () => {
     /** @type HTMLVideoElement */ const element = videoRef.current;
-    const percent = (element.currentTime / element.duration) * 100;
-    if (progressBar.current) {
+    if (progressBar.current && element.buffered.length > 0) {
+      progressBar.current.style.width = `${(element.buffered.end(element.buffered.length-1) / element.duration) * 100}%`;
+      const percent = (element.currentTime / element.buffered.end(element.buffered.length-1)) * 100;
       progressBar.current.value = `${percent}`;
     }
   }
@@ -61,6 +70,27 @@ export const Player = ({ video }) => {
     const offset = event.nativeEvent.offsetX / event.target.offsetWidth;
     element.currentTime = offset * element.duration;
   }
+
+  const addSubtitle = (payload) => {
+    /** @type HTMLVideoElement */ const video = videoRef.current;
+    /** @type HTMLTrackElement */ const track = subtitleRef.current;
+
+    if (payload.length > 0) {
+      const dataStr = "data:text/vtt;charset=utf-8," + encodeURIComponent(payload);
+
+      track.src = dataStr;
+      video.textTracks[0].mode = 'showing';
+    } else {
+      track.src = null;
+      video.textTracks[0].mode = 'hidden';
+    }
+  }
+
+  useEffect(() => {
+    if (isVisible) {
+      setVideoProgress();
+    }
+  }, [ isVisible ]);
 
   return (
     <div className="player">
@@ -73,6 +103,7 @@ export const Player = ({ video }) => {
           muted
         >
           <source src={video} type="video/mp4" />
+          <track ref={subtitleRef} kind="subtitles" label="English captions" default/>
         </video>
         <div
           ref={controls}
@@ -83,13 +114,15 @@ export const Player = ({ video }) => {
             <Fragment>
               <div className="player__container__controls__top"></div>
               <div className="player__container__controls__bottom">
-                <progress
-                  ref={progressBar}
+                <div
                   onClick={setMinute}
-                  className="player__container__controls__bottom__progress"
-                  max="100"
-                  value="0"
-                ></progress>
+                  className="player__container__controls__bottom__progress">
+                  <progress
+                    ref={progressBar}
+                    max="100"
+                    value="0"
+                  ></progress>
+                </div>
                 <div className="player__container__controls__bottom__settings">
                   <Icon
                     onClick={playVideo}
@@ -111,7 +144,7 @@ export const Player = ({ video }) => {
                       T1:E4 Amazing battle
                     </span>
                   </div>
-                  <Subtitles></Subtitles>
+                  <Subtitles setSubtitle={addSubtitle}></Subtitles>
                   <Icon
                     onClick={setFullscreen}
                     className="player__container__controls__bottom__icon margin-left-sm"
