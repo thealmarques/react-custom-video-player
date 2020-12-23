@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useRef, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "../../shared/icon";
 import { Sound } from "../sound/sound";
 import { Subtitles } from "../subtitles/subtitles";
@@ -15,7 +15,7 @@ export const Player = ({ video }) => {
   const progressBar = useRef(null);
   const subtitleRef = useRef(null);
 
-  const setControlsVisible = () => {
+  const setControlsVisible = useCallback(() => {
     /** @type HTMLElement */ const element = controls.current;
     element.classList.add("player__container__controls-active");
     clearTimeout(timeout.current);
@@ -25,24 +25,24 @@ export const Player = ({ video }) => {
       element.classList.remove("player__container__controls-active");
       setVisible(false);
     }, 3000);
-  };
+  }, []);
 
-  const setSoundLevel = (level) => {
+  const setSoundLevel = useCallback((level) => {
     setControlsVisible();
     setSound(level);
 
     /** @type HTMLVideoElement */ const element = videoRef.current;
     element.muted = false;
     element.volume = level / 100;
-  };
+  }, [ setControlsVisible ]);
 
-  const playVideo = () => {
+  const playVideo = useCallback(() => {
     /** @type HTMLVideoElement */ const element = videoRef.current;
     playing ? element.pause() : element.play();
     setPlaying(!playing);
-  };
+  }, [ playing ]);
 
-  const setFullscreen = () => {
+  const setFullscreen = useCallback(() => {
     /** @type any */ const element = document.querySelector(
       ".player__container"
     );
@@ -54,16 +54,16 @@ export const Player = ({ video }) => {
     } else if (element.msRequestFullscreen) { /* IE11 */
       element.msRequestFullscreen();
     }
-  };
+  }, []);
 
-  const setVideoProgress = () => {
+  const setVideoProgress = useCallback(() => {
     /** @type HTMLVideoElement */ const element = videoRef.current;
     if (progressBar.current && element.buffered.length > 0) {
       progressBar.current.style.width = `${(element.buffered.end(element.buffered.length-1) / element.duration) * 100}%`;
       const percent = (element.currentTime / element.buffered.end(element.buffered.length-1)) * 100;
       progressBar.current.value = `${percent}`;
     }
-  }
+  }, []);
 
   const setMinute = (event) => {
     /** @type HTMLVideoElement */ const element = videoRef.current;
@@ -90,7 +90,7 @@ export const Player = ({ video }) => {
     if (isVisible) {
       setVideoProgress();
     }
-  }, [ isVisible ]);
+  }, [ isVisible, setVideoProgress ]);
 
   return (
     <div className="player">
