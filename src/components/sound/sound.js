@@ -1,6 +1,6 @@
 import React, { useRef } from "react";
 import { Icon } from "../../shared/icon";
-import _ from "lodash";
+import { throttle } from "lodash";
 import "./sound.scss";
 
 export const Sound = ({ soundLevel, setSoundLevel }) => {
@@ -10,7 +10,7 @@ export const Sound = ({ soundLevel, setSoundLevel }) => {
   const soundPercentage = useRef(soundLevel);
   const previousOffset = useRef(0);
 
-  const debounceEmitter = _.throttle(() => {
+  const debounceEmitter = throttle(() => {
     setSoundLevel(soundPercentage.current);
   }, 1000);
 
@@ -50,7 +50,6 @@ export const Sound = ({ soundLevel, setSoundLevel }) => {
   };
 
   const onSetSound = (event) => {
-    /** @type HTMLElement */ const doorHandler = handle.current;
     /** @type HTMLElement */ const bar = sound.current;
     const clientY = event.clientY;
     const distance = bar.parentElement.getBoundingClientRect().height;
